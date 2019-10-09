@@ -1,0 +1,4 @@
+downloads/*
+.idea/*
+*.txt
+.venv
