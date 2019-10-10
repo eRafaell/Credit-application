@@ -1,6 +1,6 @@
 USE [Credits]
 GO
-/****** Object:  Table [dbo].[BlackList]    Script Date: 09.10.2019 21:05:55 ******/
+/****** Object:  Table [dbo].[BlackList]    Script Date: 10.10.2019 19:08:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -15,7 +15,7 @@ CREATE TABLE [dbo].[BlackList](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Client]    Script Date: 09.10.2019 21:05:55 ******/
+/****** Object:  Table [dbo].[Client]    Script Date: 10.10.2019 19:08:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -35,7 +35,7 @@ CREATE TABLE [dbo].[Client](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Expenses]    Script Date: 09.10.2019 21:05:55 ******/
+/****** Object:  Table [dbo].[Expenses]    Script Date: 10.10.2019 19:08:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -51,7 +51,7 @@ CREATE TABLE [dbo].[Expenses](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Income]    Script Date: 09.10.2019 21:05:55 ******/
+/****** Object:  Table [dbo].[Income]    Script Date: 10.10.2019 19:08:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -72,7 +72,7 @@ CREATE TABLE [dbo].[Income](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Loan]    Script Date: 09.10.2019 21:05:55 ******/
+/****** Object:  Table [dbo].[Loan]    Script Date: 10.10.2019 19:08:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -107,7 +107,7 @@ REFERENCES [dbo].[Client] ([IdClient])
 GO
 ALTER TABLE [dbo].[Income] CHECK CONSTRAINT [FK_Income_Client]
 GO
-/****** Object:  StoredProcedure [dbo].[AddClient]    Script Date: 09.10.2019 21:05:55 ******/
+/****** Object:  StoredProcedure [dbo].[AddClient]    Script Date: 10.10.2019 19:08:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -117,6 +117,12 @@ CREATE PROCEDURE [dbo].[AddClient] (@FirstName varchar(50), @LastName varchar(50
 
 AS
 BEGIN
+	declare @IdClient int
+	set @IdClient = (select max(IdClient) from Client)
+	if @IdClient > 0
+		set @IdClient = @IdClient + 1
+	else
+		set @IdClient = 1
 
 	set @Street = (select trim(replace(@street,'ul.','')))
 	if @PESEL in (select PESEL from Client)
@@ -126,26 +132,32 @@ BEGIN
 		print 'Sex can be only man - "M" or woman - "W"'
 
 	else
-		insert into Client values (@FirstName, @LastName, @City, @Street, @Sex, @MartialStatus, @PESEL)
+		insert into Client values (@IdClient, @FirstName, @LastName, @City, @Street, @Sex, @MartialStatus, @PESEL)
 		
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AddExpenses]    Script Date: 09.10.2019 21:05:55 ******/
+/****** Object:  StoredProcedure [dbo].[AddExpenses]    Script Date: 10.10.2019 19:08:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-Create PROCEDURE [dbo].[AddExpenses] (@AllMonthlyCredits int, @AllMonthlyBills int, @ClientId int)
+CREATE PROCEDURE [dbo].[AddExpenses] (@AllMonthlyCredits int, @AllMonthlyBills int, @ClientId int)
 
 AS
 BEGIN
+	declare @IdExpenses int
+	set @IdExpenses = (select max(IdExpenses) from Expenses)
+	if @IdExpenses > 0
+		set @IdExpenses = @IdExpenses + 1
+	else
+		set @IdExpenses = 1
 
-		insert into Expenses values (@AllMonthlyCredits, @AllMonthlyBills, @ClientId)
+		insert into Expenses values (@IdExpenses, @AllMonthlyCredits, @AllMonthlyBills, @ClientId)
 		
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AddIncome]    Script Date: 09.10.2019 21:05:55 ******/
+/****** Object:  StoredProcedure [dbo].[AddIncome]    Script Date: 10.10.2019 19:08:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -154,14 +166,21 @@ CREATE PROCEDURE [dbo].[AddIncome] (@Employer varchar(50), @EmploymentCity varch
 
 AS
 BEGIN
+	declare @IdIncome int
+	set @IdIncome = (select max(IdIncome) from Income)
+	if @IdIncome > 0
+		set @IdIncome = @IdIncome + 1
+	else
+		set @IdIncome = 1
+
 	set @EmploymentStreet = (select trim(replace(@EmploymentStreet,'ul.','')))
 	if len(@NIP) != 10 
 		print 'Wrong NIP. NIP number must have 10 digits'
 	else
-		insert into Income values (@Employer, @EmploymentCity, @EmploymentStreet, @NIP, @EmploymentType, round(@NetSalary,2), round(@SpouseSalary,2), @ClientId)
+		insert into Income values (@IdIncome, @Employer, @EmploymentCity, @EmploymentStreet, @NIP, @EmploymentType, round(@NetSalary,2), round(@SpouseSalary,2), @ClientId)
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AddLoan]    Script Date: 09.10.2019 21:05:55 ******/
+/****** Object:  StoredProcedure [dbo].[AddLoan]    Script Date: 10.10.2019 19:08:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -178,6 +197,12 @@ BEGIN
 	declare @AllExpenses int
 	declare @AllCredits int
 	declare @AllBills int
+	declare @IdLoan int
+	set @IdLoan = (select max(IdLoan) from Loan)
+	if @IdLoan > 0
+		set @IdLoan = @IdLoan + 1
+	else
+		set @IdLoan = 1
 
 	set @MonthlyInstallment = (@BorrowAmount*(1+@InterestRate/100)/@InstallmentsNumber)
 	set @Number = (select NetSalary from income where ClientId=@ClientId) + (select SpouseSalary from income where ClientId=@ClientId)
@@ -194,11 +219,11 @@ BEGIN
 		set @Status = 'Rejected'
 	
 	
-	insert into Loan values (@BorrowAmount, @InstallmentsNumber, round(@InterestRate,2), @ClientId, round(@MonthlyInstallment,2), round(@TotalAmountToGiveBack,2), @Status)
+	insert into Loan values (@IdLoan, @BorrowAmount, @InstallmentsNumber, round(@InterestRate,2), @ClientId, round(@MonthlyInstallment,2), round(@TotalAmountToGiveBack,2), @Status)
 		
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AddToBlackList]    Script Date: 09.10.2019 21:05:55 ******/
+/****** Object:  StoredProcedure [dbo].[AddToBlackList]    Script Date: 10.10.2019 19:08:21 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
