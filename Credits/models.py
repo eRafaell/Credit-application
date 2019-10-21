@@ -27,6 +27,7 @@ class Models:
         values = (li[0], li[1], li[2], li[3], li[4], li[5], li[6], li[7])
         cursor.execute(query, values)
         cnxn.commit()
+        cnxn.close()
 
     def add_client_to_database(self):
         adding = f"INSERT INTO Client (IdClient, FirstName, LastName, City, Street, Sex, MaritalStatus, PESEL) " \
@@ -40,6 +41,7 @@ class Models:
         values = (li[0], li[1], li[2], li[3], li[4], li[5], li[6], li[7], li[8])
         cursor.execute(query, values)
         cnxn.commit()
+        cnxn.close()
 
     def add_income_to_database(self):
         adding = f"INSERT INTO Income (IdIncome, Employer, EmploymentCity, EmploymentStreet, NIP, EmploymentType, " \
@@ -53,6 +55,7 @@ class Models:
         values = (li[0], li[1], li[2], li[3])
         cursor.execute(query, values)
         cnxn.commit()
+        cnxn.close()
 
     def add_expenses_to_database(self):
         adding = f"INSERT INTO Expenses (IdExpenses, AllMonthlyCredits, AllMonthlyBills, ClientId) VALUES (?,?,?,?)"
@@ -65,6 +68,7 @@ class Models:
         values = (li[0], li[1], li[2], li[3], li[4], li[5], li[6], li[7])
         cursor.execute(query, values)
         cnxn.commit()
+        cnxn.close()
 
     def add_loan_to_database(self):
         adding = f"INSERT INTO Loan (IdLoan, BorrowAmount, InstallmentsNumber, InterestRate, ClientId, " \
